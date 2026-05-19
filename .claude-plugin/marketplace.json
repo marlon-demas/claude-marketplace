@@ -1,0 +1,16 @@
+{
+  "name": "marlon-demas",
+  "owner": {
+    "name": "Marlon Demas"
+  },
+  "metadata": {
+    "description": "Android emulator automation skills for Claude Code (cross-platform parallel to conorluddy/ios-simulator-skill)"
+  },
+  "plugins": [
+    {
+      "name": "android-emulator-skill",
+      "source": "./android-emulator-skill",
+      "description": "Phase 1 production scripts for Android app testing and automation. Cross-platform (macOS, Linux, Windows) — the Android equivalent of ios-simulator-skill."
+    }
+  ]
+}

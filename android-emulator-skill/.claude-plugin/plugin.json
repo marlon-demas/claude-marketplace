@@ -1,0 +1,12 @@
+{
+  "name": "android-emulator-skill",
+  "version": "0.1.0",
+  "description": "10 production scripts for Android emulator testing, install, screenshot, accessibility dump, gesture drive, and lifecycle management. Cross-platform (macOS, Linux, Windows). Used by the makes-design verify loop on hosts that cannot run Xcode.",
+  "author": {
+    "name": "Marlon Demas"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/marlon-demas/android-emulator-skill",
+  "repository": "https://github.com/marlon-demas/android-emulator-skill",
+  "keywords": ["android", "emulator", "adb", "uiautomator", "testing", "accessibility", "automation", "cross-platform"]
+}
