@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 """
-dispatch-guard v0.1.0 — PreToolUse hook for the Agent/Task tool.
+dispatch-guard v0.2.0 — PreToolUse hook for the Agent/Task tool.
 
 Validates four invariants before every subagent dispatch:
   (a) model field present and non-empty
   (b) model is one of: haiku, sonnet, opus, fable
-  (c) opus-floor agents not dispatched at haiku/sonnet
-      (unless DISPATCH_GUARD_ALLOW_DOWNGRADE=1)
+  (c) hard-floor agents (atlas, sentinel, orchestrator) must be at opus or fable;
+      soft-floor agents (cipher, scout, oracle) must be at sonnet or above —
+      sonnet is allowed with an advisory warning, haiku is always blocked
+      (unless DISPATCH_GUARD_ALLOW_DOWNGRADE=1 for the hard-floor set)
   (d) sentinel + fable → always blocked (unconditional)
+
+Router doctrine source: CLAUDE.md → Agent System → Opus-downgrade clause
+  - Atlas, Sentinel: non-downgradable pins (no sonnet, no haiku)
+  - Cipher, Scout, Oracle: downgradable to sonnet when task matches
+    router.md Sonnet-OK conditions; haiku never allowed
 
 Fail-open: any internal error allows the call through and writes a WARN line.
 Log: ~/.claude/dispatch-guard.log (append-only, one line per dispatch).
@@ -25,8 +32,17 @@ from datetime import datetime, timezone
 
 VALID_MODELS = {"haiku", "sonnet", "opus", "fable"}
 
-# Agents that must be dispatched at opus or fable minimum.
-OPUS_FLOOR_AGENTS = {"atlas", "cipher", "scout", "sentinel", "oracle", "orchestrator"}
+# Agents that must be dispatched at opus or fable — sonnet/haiku are blocked.
+# Atlas may legally run at fable (router: "Atlas any task" is a Fable trigger);
+# fable >= opus floor, so it passes cleanly.
+# DISPATCH_GUARD_ALLOW_DOWNGRADE=1 is the escape hatch for this set only.
+HARD_OPUS_FLOOR: set[str] = {"atlas", "sentinel", "orchestrator"}
+
+# Agents whose frontmatter pins opus but whose doctrine permits sonnet for
+# specific task types (router.md Sonnet-OK conditions).
+# Sonnet → allowed with an advisory warning.
+# Haiku → always blocked (no doctrine ever warrants these agents at haiku).
+SOFT_OPUS_FLOOR: set[str] = {"cipher", "scout", "oracle"}
 
 LOG_PATH = os.path.expanduser("~/.claude/dispatch-guard.log")
 
@@ -92,7 +108,7 @@ def validate(tool_input: dict) -> dict:
                     f"invalid model {model!r} — per-dispatch whitelist is haiku|sonnet|opus|fable "
                     f"(note: 'best' is rejected by the Agent tool enum; use 'fable' for the top tier)")
 
-    # (d) sentinel + fable → unconditional block (checked before opus-floor so the
+    # (d) sentinel + fable → unconditional block (checked before floor rules so the
     #     more specific rule fires first and the reason string is maximally clear)
     if subagent_type == "sentinel" and model == "fable":
         return deny(subagent_type, model,
@@ -100,16 +116,31 @@ def validate(tool_input: dict) -> dict:
                     "auto-falls-back to Opus 4.8 for ~5% of sentinel sessions; paying 2× "
                     "Fable rate to usually get Opus is pure waste. Use model: 'opus' for sentinel.")
 
-    # (c) opus-floor agents must not be dispatched below floor
-    if subagent_type in OPUS_FLOOR_AGENTS and model in {"haiku", "sonnet"}:
+    # (c-hard) hard-floor agents must be at opus or fable
+    if subagent_type in HARD_OPUS_FLOOR and model in {"haiku", "sonnet"}:
         allow_downgrade = os.environ.get("DISPATCH_GUARD_ALLOW_DOWNGRADE", "") == "1"
         if allow_downgrade:
             return warn_allow(subagent_type, model,
                               f"downgrade allowed via DISPATCH_GUARD_ALLOW_DOWNGRADE=1 "
-                              f"(opus-floor agent {subagent_type!r} dispatched at {model!r})")
+                              f"(hard-floor agent {subagent_type!r} dispatched at {model!r})")
         return deny(subagent_type, model,
-                    f"opus-floor agent {subagent_type!r} cannot be dispatched at {model!r} "
+                    f"hard-floor agent {subagent_type!r} cannot be dispatched at {model!r} "
                     f"(floor is opus). Set DISPATCH_GUARD_ALLOW_DOWNGRADE=1 to override.")
+
+    # (c-soft) soft-floor agents: haiku always blocked; sonnet allowed with advisory
+    if subagent_type in SOFT_OPUS_FLOOR:
+        if model == "haiku":
+            return deny(subagent_type, model,
+                        f"soft-floor agent {subagent_type!r} cannot be dispatched at haiku "
+                        f"(minimum is sonnet; opus is the default — downgrade to sonnet only "
+                        f"when the task matches a router.md Sonnet-OK condition)")
+        if model == "sonnet":
+            return warn_allow(subagent_type, model,
+                              f"soft-floor agent {subagent_type!r} dispatched at sonnet — "
+                              f"advisory: this is doctrine-legal only when the task matches a "
+                              f"router.md Sonnet-OK condition (e.g. Cipher: CRUD spec; "
+                              f"Scout: simple decomposition; Oracle: single dbt model/query). "
+                              f"Default is opus when in doubt.")
 
     return allow(subagent_type, model, "all checks passed")
 
