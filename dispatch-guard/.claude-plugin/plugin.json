@@ -1,0 +1,12 @@
+{
+  "name": "dispatch-guard",
+  "version": "0.1.0",
+  "description": "PreToolUse hook that validates Agent/Task dispatch calls: enforces model presence, rejects invalid model names, blocks opus-floor agents dispatched below floor, and hard-blocks sentinel+fable. Append-only log at ~/.claude/dispatch-guard.log. Fail-open — never bricks a session.",
+  "author": {
+    "name": "Marlon Demas"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/marlon-demas/dispatch-guard",
+  "repository": "https://github.com/marlon-demas/dispatch-guard",
+  "keywords": ["dispatch", "guard", "agent", "model", "validation", "hook", "pretools", "devops", "routing"]
+}

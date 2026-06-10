@@ -11,6 +11,11 @@
       "name": "android-emulator-skill",
       "source": "./android-emulator-skill",
       "description": "Phase 1 production scripts for Android app testing and automation. Cross-platform (macOS, Linux, Windows) — the Android equivalent of ios-simulator-skill."
+    },
+    {
+      "name": "dispatch-guard",
+      "source": "./dispatch-guard",
+      "description": "PreToolUse hook that validates Agent/Task dispatch calls: enforces model presence, rejects invalid model names (haiku|sonnet|opus|fable only), blocks opus-floor agents dispatched below floor, and hard-blocks sentinel+fable. Fail-open — never bricks a session."
     }
   ]
 }
