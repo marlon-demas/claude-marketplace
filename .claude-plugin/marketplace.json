@@ -16,6 +16,11 @@
       "name": "dispatch-guard",
       "source": "./dispatch-guard",
       "description": "PreToolUse hook that validates Agent/Task dispatch calls: enforces model presence, rejects invalid model names (haiku|sonnet|opus|fable only), blocks opus-floor agents dispatched below floor, and hard-blocks sentinel+fable. Fail-open — never bricks a session."
+    },
+    {
+      "name": "control-room",
+      "source": "./control-room",
+      "description": "Live agent-dispatch dashboard — observer hooks + SSE + Control Room Live radial map on localhost:4517. Fail-open, localhost only."
     }
   ]
 }

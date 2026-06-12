@@ -1,0 +1,8 @@
+project: control-room
+stack: static-html
+surfaces:
+  - name: dashboard
+    file: dashboard.html
+    kind: live-dashboard
+provenance: contract ported from orchestrator-guide; dashboard surface adopted "A - Ops Ledger" layout from the claude.ai/design handoff 2026-06-12 (radial map retired to the guide surface)
+missedPrompt: manual
