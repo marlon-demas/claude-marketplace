@@ -57,6 +57,28 @@
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --focus-ring:   0 0 0 2px var(--bg), 0 0 0 4px var(--pulse);
+  /* theme plumbing — tier hues are mid-tone; as TEXT on light surfaces they fail AA,
+     so every tier-as-text site mixes toward --text by (100% − --tier-mix). */
+  --tier-mix:     100%;
+  --logo-color:   #ffffff;                  /* Crisp White logo on dark blue */
+  --row-line:     rgba(125,199,250,0.07);
+  --panel-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+/* Specno light theme — tweaks panel: Theme → light. Brand-default surfaces. */
+body.light {
+  --bg:           #ffffff;
+  --bg-2:         #f1f3f4;
+  --surface:      #ffffff;
+  --surface-2:    #ffffff;
+  --line:         #dadce0;
+  --line-2:       #bdc1c6;
+  --text:         #36363d;
+  --text-dim:     #5f6368;
+  --text-faint:   #80868b;
+  --tier-mix:     55%;
+  --logo-color:   #489dda;                  /* Specno Blue logo on white */
+  --row-line:     rgba(10,18,46,0.08);
+  --panel-shadow: 0 12px 40px rgba(10,18,46,0.18);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
@@ -69,14 +91,14 @@ body {
 /* ── header ─────────────────────────────────────────────── */
 header { display: flex; align-items: center; gap: 28px; padding: 0 22px; height: 52px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
 .brand { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-.brand .brand-logo { height: 20px; width: auto; display: block; color: #ffffff; /* Crisp White variant on dark blue; 20px = brand minimum */ }
+.brand .brand-logo { height: 20px; width: auto; display: block; color: var(--logo-color); /* white on dark / Specno Blue on light; 20px = brand minimum */ }
 .livedot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
 .livedot.on { background: var(--haiku); box-shadow: 0 0 10px var(--haiku); animation: breathe 2.2s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
 .header-mid { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 0; overflow: hidden; }
 .hstat { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
 .hstat b { color: var(--text); font-weight: 600; font-size: 13px; }
-.hstat.warn b { color: var(--danger); }
+.hstat.warn b { color: color-mix(in srgb, var(--danger) var(--tier-mix), var(--text)); }
 .legend { display: flex; gap: 14px; margin-left: auto; flex-shrink: 0; }
 .legend-item { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); display: flex; align-items: center; gap: 5px; }
 .tierdot { display: inline-block; border-radius: 50%; flex-shrink: 0; }
@@ -88,10 +110,10 @@ header { display: flex; align-items: center; gap: 28px; padding: 0 22px; height:
 #gear:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ── atoms ──────────────────────────────────────────────── */
-.tierpill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; padding: 1px 7px; border-radius: 9999px; border: 1px solid; white-space: nowrap; }
+.tierpill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; padding: 1px 7px; border-radius: 9999px; white-space: nowrap; color: color-mix(in srgb, var(--tier, var(--pulse)) var(--tier-mix), var(--text)); background: color-mix(in srgb, var(--tier, var(--pulse)) 10%, transparent); border: 1px solid color-mix(in srgb, var(--tier, var(--pulse)) 38%, transparent); }
 .status { font-family: var(--font-mono); font-size: 12px; }
-.status.ok { color: var(--haiku); }
-.status.err { color: var(--danger); }
+.status.ok { color: color-mix(in srgb, var(--haiku) var(--tier-mix), var(--text)); }
+.status.err { color: color-mix(in srgb, var(--danger) var(--tier-mix), var(--text)); }
 .seclabel { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
 .seclabel::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .sess { font-family: var(--font-mono); font-size: 10px; padding: 0 6px; border-radius: 9999px; border: 1px solid var(--line-2); color: var(--text-dim); white-space: nowrap; }
@@ -99,7 +121,7 @@ header { display: flex; align-items: center; gap: 28px; padding: 0 22px; height:
 /* log lines */
 .logline { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); animation: login 360ms cubic-bezier(0.2,0.6,0.2,1); min-width: 0; }
 @keyframes login { from { opacity: 0.3; transform: translateY(7px); } to { opacity: 1; transform: none; } }
-.log-glyph { flex-shrink: 0; width: 12px; text-align: center; }
+.log-glyph { flex-shrink: 0; width: 12px; text-align: center; color: color-mix(in srgb, var(--glyph, var(--text-dim)) var(--tier-mix), var(--text)); }
 .log-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .log-time { color: var(--text-dim); font-size: 10px; flex-shrink: 0; opacity: 0.8; }
 
@@ -112,7 +134,7 @@ main { display: grid; grid-template-columns: 1fr 440px; flex: 1; min-height: 0; 
 .card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--tier, var(--pulse)); border-radius: 8px; padding: 13px 18px 12px; display: grid; grid-template-columns: 1fr 360px; gap: 4px 24px; animation: login 500ms cubic-bezier(0.2,0.6,0.2,1); }
 .card-top { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .card-agent { font-family: var(--font-heading); font-weight: 700; font-size: 16.5px; letter-spacing: -0.01em; }
-.card-elapsed { margin-left: auto; font-family: var(--font-mono); font-size: 13px; color: var(--tier, var(--pulse)); font-variant-numeric: tabular-nums; }
+.card-elapsed { margin-left: auto; font-family: var(--font-mono); font-size: 13px; color: color-mix(in srgb, var(--tier, var(--pulse)) var(--tier-mix), var(--text)); font-variant-numeric: tabular-nums; }
 .card-title { color: var(--text-dim); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); display: flex; gap: 16px; margin-top: 6px; align-items: baseline; }
 .card-meta b { color: var(--text); font-weight: 500; }
@@ -123,11 +145,11 @@ main { display: grid; grid-template-columns: 1fr 440px; flex: 1; min-height: 0; 
 #empty { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; padding: 60px 0 30px; font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); transition: opacity 0.5s ease; }
 #empty.hidden { display: none; }
 #empty .sub { font-size: 11px; color: var(--text-dim); opacity: 0.8; }
-#empty .sub.err { color: var(--danger); opacity: 1; }
+#empty .sub.err { color: color-mix(in srgb, var(--danger) var(--tier-mix), var(--text)); opacity: 1; }
 
 /* ledger */
 #ledger { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 2px; overflow: hidden; }
-.lrow { display: grid; grid-template-columns: 60px 110px 58px 1fr 64px 58px 60px 24px; gap: 12px; align-items: center; padding: 5px 10px; font-size: 12.5px; border-bottom: 1px solid rgba(125,199,250,0.07); min-width: 0; }
+.lrow { display: grid; grid-template-columns: 60px 110px 58px 1fr 64px 58px 60px 24px; gap: 12px; align-items: center; padding: 5px 10px; font-size: 12.5px; border-bottom: 1px solid var(--row-line); min-width: 0; }
 body.nospend .lrow { grid-template-columns: 60px 110px 58px 1fr 64px 58px 24px; }
 body.compact .lrow { padding: 3px 10px; font-size: 12px; }
 .lrow.head { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--line); padding-bottom: 7px; }
@@ -152,10 +174,10 @@ body.compact .lrow .r-agent { font-size: 12.5px; }
 .arow .cnt { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); }
 .arow.idle { opacity: 0.55; }
 .arow.active { background: linear-gradient(90deg, color-mix(in srgb, var(--tier) 12%, transparent), transparent 70%); border-left: 2px solid var(--tier); padding-left: 18px; opacity: 1; }
-.arow.active .dom { color: var(--tier); font-family: var(--font-mono); font-size: 10px; opacity: 1; }
+.arow.active .dom { color: color-mix(in srgb, var(--tier, var(--pulse)) var(--tier-mix), var(--text)); font-family: var(--font-mono); font-size: 10px; opacity: 1; }
 
 /* tweaks panel */
-#tweaks { position: fixed; right: 16px; top: 60px; width: 240px; background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 14px 16px; display: none; flex-direction: column; gap: 10px; z-index: 10; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+#tweaks { position: fixed; right: 16px; top: 60px; width: 240px; background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 14px 16px; display: none; flex-direction: column; gap: 10px; z-index: 10; box-shadow: var(--panel-shadow); }
 #tweaks.open { display: flex; }
 .tw-section { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-top: 4px; }
 .tw-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); justify-content: space-between; }
@@ -212,6 +234,7 @@ body.compact .lrow .r-agent { font-size: 12.5px; }
 </main>
 <div id="tweaks" role="dialog" aria-label="Tweaks">
   <div class="tw-section">Layout</div>
+  <div class="tw-row"><span>Theme</span><span class="tw-opts" data-tweak="theme" data-opts="dark,light"></span></div>
   <div class="tw-row"><span>Fleet rail</span><span class="tw-opts" data-tweak="fleetMode" data-opts="full,active"></span></div>
   <div class="tw-row"><span>Ledger density</span><span class="tw-opts" data-tweak="density" data-opts="regular,compact"></span></div>
   <div class="tw-section">Detail</div>
@@ -450,12 +473,13 @@ const fmtTok = n => n == null ? '—' : n >= 1000 ? (n / 1000).toFixed(n >= 1000
 const fmtClock = ms => new Date(ms).toTimeString().slice(0, 8);
 
 // ── tweaks (localStorage) ────────────────────────────────
-const TW_DEFAULTS = { fleetMode: 'full', density: 'regular', tailLines: 4, showSpend: 'off' };
+const TW_DEFAULTS = { fleetMode: 'full', density: 'regular', tailLines: 4, showSpend: 'off', theme: 'dark' };
 let tweaks = { ...TW_DEFAULTS };
 try { Object.assign(tweaks, JSON.parse(localStorage.getItem('crl-tweaks') || '{}')); } catch {}
 function applyTweaks() {
   localStorage.setItem('crl-tweaks', JSON.stringify(tweaks));
   document.body.classList.toggle('compact', tweaks.density === 'compact');
+  document.body.classList.toggle('light', tweaks.theme === 'light');
   document.body.classList.toggle('nospend', tweaks.showSpend !== 'on');
   document.querySelectorAll('.hstat.spend, .lrow .spend').forEach(el => { el.style.display = tweaks.showSpend === 'on' ? '' : 'none'; });
   document.querySelectorAll('.tw-opts').forEach(box => {
@@ -580,7 +604,7 @@ function renderCards() {
     card.className = 'card'; card.style.setProperty('--tier', c);
     const top = document.createElement('div'); top.className = 'card-top';
     const pill = span('tierpill', rec.model || '?');
-    pill.style.cssText = `color:${c};border-color:${c}55;background:${c}14`;
+    pill.style.setProperty('--tier', c);
     rec.elapsedEl = span('card-elapsed', fmtDur(Date.now() - rec.t0));
     top.append(span('card-agent', rec.agent), pill, rec.elapsedEl);
     const meta = document.createElement('div'); meta.className = 'card-meta';
@@ -591,7 +615,7 @@ function renderCards() {
       const tail = document.createElement('div'); tail.className = 'card-tail';
       rec.logs.slice(-tweaks.tailLines).forEach(l => {
         const row = document.createElement('div'); row.className = 'logline';
-        const g = span('log-glyph', l.glyph); g.style.color = l.color;
+        const g = span('log-glyph', l.glyph); g.style.setProperty('--glyph', l.color);
         row.append(g, span('log-text', l.text), span('log-time', fmtClock(l.t)));
         tail.appendChild(row);
       });

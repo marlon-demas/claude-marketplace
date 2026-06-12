@@ -79,3 +79,12 @@ Entries feed future sessions as constraints. Tags: ACCEPTED / REJECTED / AESTHET
   LOG_KIND glyph colors follow the same mapping so tool glyphs stay tier-coherent.
 - INSIGHT: re-skin executed as a count-asserted splice (style block swap + exact-string JS
   patches) — markup/data/behavior untouched by construction. Same method as the guide.
+
+## 2026-06-12 — Light theme toggle (v0.2.2)
+- ACCEPTED: user wanted a light option after seeing dark-only; shipped as a tweaks-panel
+  toggle (dark default) rather than prefers-color-scheme — explicit control fits the
+  existing tweaks framework and ops monitors usually stay pinned.
+- INSIGHT: theming inline JS colors — the two literal-color sites (tierpill cssText,
+  log-glyph style.color) were converted to custom props (--tier / --glyph) so CSS owns
+  the theme-aware derivation; a single --tier-mix percentage var themes every
+  tier-as-text site without duplicating rules.
