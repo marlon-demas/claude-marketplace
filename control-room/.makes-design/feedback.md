@@ -70,3 +70,12 @@ Entries feed future sessions as constraints. Tags: ACCEPTED / REJECTED / AESTHET
   text (hstat labels, seclabels, meta, group headers, fleet domains) — all floored to
   --text-dim per the standing AA rule. Mock-only data columns (cost) ship hidden by default;
   tokens proved real (hook tool_response carries usage — extracted defensively).
+
+## 2026-06-12 — Specno re-skin (v0.2.1)
+- ACCEPTED: dark-Specno full-screen treatment (matches the Specno guide's hero) over a
+  light dashboard — ops monitors read dark; brand approves dark blue for these surfaces.
+- AESTHETIC: tier hues re-encoded on the Specno secondary palette (haiku→green #a0d468,
+  sonnet→blue #489dda, opus→purple #ac92ec, fable→orange #fc6e51, danger→red #ed5565);
+  LOG_KIND glyph colors follow the same mapping so tool glyphs stay tier-coherent.
+- INSIGHT: re-skin executed as a count-asserted splice (style block swap + exact-string JS
+  patches) — markup/data/behavior untouched by construction. Same method as the guide.
