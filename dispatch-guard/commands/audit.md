@@ -18,10 +18,9 @@ failure mode, and surface actionable recommendations.
    grep " BLOCK " ~/.claude/dispatch-guard.log
    ```
 
-3. Group by failure mode by parsing the `reason=` field. The four failure modes are:
+3. Group by failure mode by parsing the `reason=` field. The three failure modes are:
    - **missing-model** — `"model field is missing or empty"`
-   - **invalid-model** — `"invalid model"` (includes `best` alias trap, `gpt-4`, etc.)
-   - **sentinel-fable** — `"sentinel+fable is unconditionally blocked"`
+   - **invalid-model** — `"invalid model"` (includes `best` alias trap, `fable`, `gpt-4`, etc.)
    - **opus-floor** — `"opus-floor agent"` (agent dispatched below floor)
 
 4. For each mode with 1+ occurrences, print:
@@ -31,11 +30,9 @@ failure mode, and surface actionable recommendations.
 5. Propose concrete corrective actions:
    - **missing-model** (>2 occurrences): suggest adding a memory entry reminding the
      orchestrator that `model:` is MUST-PASS on every Agent() call.
-   - **invalid-model** (`best` appearing): suggest confirming `best` is removed from
-     all per-dispatch sites (valid only in settings.json/frontmatter).
+   - **invalid-model** (`best` or `fable` appearing): suggest confirming these values are removed from
+     all per-dispatch sites (valid models are haiku/sonnet/opus only).
    - **invalid-model** (other values): identify the agent that dispatched the bad value.
-   - **sentinel-fable** (any): remind that Sentinel is permanently `opus`; check if
-     router.md Fable triggers were too broad.
    - **opus-floor** (>3 occurrences for the same subagent_type): propose adding a
      note to the orchestrator's dispatch checklist for that agent.
 

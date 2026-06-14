@@ -2,14 +2,13 @@
 """
 dispatch-guard v0.2.0 — PreToolUse hook for the Agent/Task tool.
 
-Validates four invariants before every subagent dispatch:
+Validates three invariants before every subagent dispatch:
   (a) model field present and non-empty
-  (b) model is one of: haiku, sonnet, opus, fable
-  (c) hard-floor agents (atlas, sentinel, orchestrator) must be at opus or fable;
+  (b) model is one of: haiku, sonnet, opus
+  (c) hard-floor agents (atlas, sentinel, orchestrator) must be at opus;
       soft-floor agents (cipher, scout, oracle) must be at sonnet or above —
       sonnet is allowed with an advisory warning, haiku is always blocked
       (unless DISPATCH_GUARD_ALLOW_DOWNGRADE=1 for the hard-floor set)
-  (d) sentinel + fable → always blocked (unconditional)
 
 Router doctrine source: CLAUDE.md → Agent System → Opus-downgrade clause
   - Atlas, Sentinel: non-downgradable pins (no sonnet, no haiku)
@@ -30,11 +29,9 @@ from datetime import datetime, timezone
 # Constants
 # ---------------------------------------------------------------------------
 
-VALID_MODELS = {"haiku", "sonnet", "opus", "fable"}
+VALID_MODELS = {"haiku", "sonnet", "opus"}
 
-# Agents that must be dispatched at opus or fable — sonnet/haiku are blocked.
-# Atlas may legally run at fable (router: "Atlas any task" is a Fable trigger);
-# fable >= opus floor, so it passes cleanly.
+# Agents that must be dispatched at opus — sonnet/haiku are blocked.
 # DISPATCH_GUARD_ALLOW_DOWNGRADE=1 is the escape hatch for this set only.
 HARD_OPUS_FLOOR: set[str] = {"atlas", "sentinel", "orchestrator"}
 
@@ -93,7 +90,7 @@ def warn_allow(subagent_type: str, model: str, reason: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def validate(tool_input: dict) -> dict:
-    """Run the four checks. Returns the output dict for Claude Code."""
+    """Run the three checks. Returns the output dict for Claude Code."""
     model = tool_input.get("model") or ""
     model = model.strip()
     subagent_type = (tool_input.get("subagent_type") or "").strip().lower()
@@ -105,18 +102,9 @@ def validate(tool_input: dict) -> dict:
     # (b) model must be a valid per-dispatch value
     if model not in VALID_MODELS:
         return deny(subagent_type, model,
-                    f"invalid model {model!r} — per-dispatch whitelist is haiku|sonnet|opus|fable "
-                    f"(note: 'best' is rejected by the Agent tool enum; use 'fable' for the top tier)")
+                    f"invalid model {model!r} — per-dispatch whitelist is haiku|sonnet|opus")
 
-    # (d) sentinel + fable → unconditional block (checked before floor rules so the
-    #     more specific rule fires first and the reason string is maximally clear)
-    if subagent_type == "sentinel" and model == "fable":
-        return deny(subagent_type, model,
-                    "sentinel+fable is unconditionally blocked — the safety classifier "
-                    "auto-falls-back to Opus 4.8 for ~5% of sentinel sessions; paying 2× "
-                    "Fable rate to usually get Opus is pure waste. Use model: 'opus' for sentinel.")
-
-    # (c-hard) hard-floor agents must be at opus or fable
+    # (c-hard) hard-floor agents must be at opus
     if subagent_type in HARD_OPUS_FLOOR and model in {"haiku", "sonnet"}:
         allow_downgrade = os.environ.get("DISPATCH_GUARD_ALLOW_DOWNGRADE", "") == "1"
         if allow_downgrade:

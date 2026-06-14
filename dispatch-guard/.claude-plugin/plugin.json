@@ -1,7 +1,7 @@
 {
   "name": "dispatch-guard",
   "version": "0.2.0",
-  "description": "PreToolUse hook that validates Agent/Task dispatch calls: enforces model presence, rejects invalid model names, applies split floor policy (hard-floor: atlas/sentinel/orchestrator must be opus+; soft-floor: cipher/scout/oracle allow sonnet with advisory, block haiku), and hard-blocks sentinel+fable. Append-only log at ~/.claude/dispatch-guard.log. Fail-open — never bricks a session.",
+  "description": "PreToolUse hook that validates Agent/Task dispatch calls: enforces model presence, rejects invalid model names (valid: haiku/sonnet/opus), applies split floor policy (hard-floor: atlas/sentinel/orchestrator must be opus; soft-floor: cipher/scout/oracle allow sonnet with advisory, block haiku). Append-only log at ~/.claude/dispatch-guard.log. Fail-open — never bricks a session.",
   "author": {
     "name": "Marlon Demas"
   },

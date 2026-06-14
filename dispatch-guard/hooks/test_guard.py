@@ -1,6 +1,8 @@
 """
 Tests for dispatch-guard v0.2.0 guard.py validation logic.
 
+Valid models: haiku, sonnet, opus (fable removed — Anthropic restriction 2026-06-14).
+
 Run: python3 -m pytest hooks/test_guard.py -v
 (from the dispatch-guard repo root)
 """
@@ -72,6 +74,12 @@ class TestInvalidModel:
     def test_best_alias_is_blocked(self) -> None:
         result = _dispatch("nova", "best")
         assert _is_block(result)
+        assert "haiku|sonnet|opus" in result["systemMessage"]
+
+    def test_fable_is_blocked(self) -> None:
+        result = _dispatch("nova", "fable")
+        assert _is_block(result)
+        assert "haiku|sonnet|opus" in result["systemMessage"]
 
     def test_gpt4_is_blocked(self) -> None:
         result = _dispatch("nova", "gpt-4")
@@ -79,14 +87,15 @@ class TestInvalidModel:
 
 
 # ---------------------------------------------------------------------------
-# (d) Sentinel + fable unconditional block
+# Sentinel floor (fable now invalid-model, not a separate sentinel rule)
 # ---------------------------------------------------------------------------
 
-class TestSentinelFable:
-    def test_sentinel_fable_is_blocked(self) -> None:
+class TestSentinelFloor:
+    def test_sentinel_fable_is_blocked_as_invalid_model(self) -> None:
+        # fable is no longer a valid model — blocked at rule (b)
         result = _dispatch("sentinel", "fable")
         assert _is_block(result)
-        assert "unconditionally blocked" in result["systemMessage"]
+        assert "haiku|sonnet|opus" in result["systemMessage"]
 
     def test_sentinel_opus_is_allowed(self) -> None:
         result = _dispatch("sentinel", "opus")
@@ -95,12 +104,6 @@ class TestSentinelFable:
     def test_sentinel_sonnet_is_blocked(self) -> None:
         # sentinel is in HARD_OPUS_FLOOR
         result = _dispatch("sentinel", "sonnet")
-        assert _is_block(result)
-
-    def test_sentinel_fable_blocked_even_with_env_override(self, monkeypatch) -> None:
-        monkeypatch.setenv("DISPATCH_GUARD_ALLOW_DOWNGRADE", "1")
-        result = _dispatch("sentinel", "fable")
-        # (d) fires before (c), so still blocked regardless of env
         assert _is_block(result)
 
 
@@ -122,10 +125,11 @@ class TestHardFloor:
         result = _dispatch("atlas", "opus")
         assert _is_pass(result)
 
-    def test_atlas_fable_allowed(self) -> None:
-        # Atlas may run at fable — "Atlas any task" is a Fable trigger
+    def test_atlas_fable_blocked_as_invalid_model(self) -> None:
+        # fable is no longer a valid model — blocked at rule (b)
         result = _dispatch("atlas", "fable")
-        assert _is_pass(result)
+        assert _is_block(result)
+        assert "haiku|sonnet|opus" in result["systemMessage"]
 
     def test_atlas_sonnet_blocked_even_with_env_override_off(self) -> None:
         # confirm default (no env var) still blocks
@@ -167,9 +171,11 @@ class TestSoftFloor:
         result = _dispatch("scout", "opus")
         assert _is_pass(result)
 
-    def test_scout_fable_allowed(self) -> None:
+    def test_scout_fable_blocked_as_invalid_model(self) -> None:
+        # fable is no longer a valid model — blocked at rule (b)
         result = _dispatch("scout", "fable")
-        assert _is_pass(result)
+        assert _is_block(result)
+        assert "haiku|sonnet|opus" in result["systemMessage"]
 
     def test_cipher_sonnet_allowed_with_advisory(self) -> None:
         result = _dispatch("cipher", "sonnet")
@@ -210,5 +216,8 @@ class TestOrdinaryAgents:
     def test_lana_opus_allowed(self) -> None:
         assert _is_pass(_dispatch("lana", "opus"))
 
-    def test_forge_fable_allowed(self) -> None:
-        assert _is_pass(_dispatch("forge", "fable"))
+    def test_forge_fable_blocked_as_invalid_model(self) -> None:
+        # fable is no longer a valid model — blocked at rule (b)
+        result = _dispatch("forge", "fable")
+        assert _is_block(result)
+        assert "haiku|sonnet|opus" in result["systemMessage"]
