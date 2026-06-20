@@ -1,6 +1,6 @@
 {
   "name": "control-room",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Live agent-dispatch dashboard. Observer hooks (PreToolUse/PostToolUse on Agent|Task + session events) append to ~/.claude/control-room/events.jsonl; a zero-dependency local server streams them over SSE to a Control Room Live radial map — dispatched agents pulse, run with elapsed timers, and land in a real dispatch feed. Fail-open: the observer never blocks a session. Localhost only.",
   "author": {
     "name": "Marlon Demas"

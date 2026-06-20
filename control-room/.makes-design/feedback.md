@@ -88,3 +88,6 @@ Entries feed future sessions as constraints. Tags: ACCEPTED / REJECTED / AESTHET
   log-glyph style.color) were converted to custom props (--tier / --glyph) so CSS owns
   the theme-aware derivation; a single --tier-mix percentage var themes every
   tier-as-text site without duplicating rules.
+
+## 2026-06-21 — Constellation Control Room (v0.3.0)
+`AESTHETIC:` direction "Constellation Control Room" (Option A) locked. Fleet rail DOM list replaced with a live radial constellation canvas (orchestrator fixed at center, agents on domain-group arcs, idle nodes ~35% opacity, dispatched nodes scale + glow ring + pulse); SVG dispatch-arc layer draws center → target on each pre-dispatch event, fades ~1200ms post-dispatch. Hard constraint: the live data path (hooks/emit.py, hooks/hooks.json, server/serve.mjs, EventSource('/events')) must remain untouched — the dashboard is localhost-only and the canvas is purely a rendering layer over the same SSE event stream. Dead --fable token and all fable references removed (ADR-0002 compliance). Specno 4-square stroke-dashoffset loader replaces "connecting…" text as the SSE-connect state in the constellation panel.
