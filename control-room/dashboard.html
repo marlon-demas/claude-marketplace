@@ -45,7 +45,7 @@
    ────────────────────────────────────────────────────────────────────────────── */
 :root {
   --bg:           #0a122e;  /* Specno Dark Blue */
-  --bg-2:         #0d1738;
+  --bg-2:         #0d1735;  /* second background shade — matches --dark-mid in build-site.sh */
   --surface:      #111c3a;  /* Specno dark card (canonical #111c3a) */
   --surface-2:    #16204a;  /* elevated panels */
   --line:         rgba(125,199,250,0.14);
@@ -205,8 +205,8 @@ body.compact .lrow .r-agent { font-size: 12.5px; }
 @media (max-width: 1420px) { main { grid-template-columns: 1fr 360px; } .card { grid-template-columns: 1fr 280px; } }
 @media (max-width: 1300px) { .legend { display: none; } }
 @media (max-width: 1100px) { main { grid-template-columns: 1fr; } #fleet { display: none; } }
-@media (prefers-reduced-motion: reduce) { .sse-loader-mark rect { animation: none; stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
+  .sse-loader-mark rect { animation: none; stroke-dashoffset: 0; }
   .livedot.on, .logline, .card, .lrow.fresh, .status.run { animation: none; }
 }
 </style>
@@ -519,7 +519,7 @@ function applyTweaks() {
     const key = box.dataset.tweak;
     box.querySelectorAll('.tw-opt').forEach(b => b.classList.toggle('on', String(tweaks[key]) === b.dataset.v));
   });
-  renderFleet(); renderCards();
+  renderCards();
 }
 document.querySelectorAll('.tw-opts').forEach(box => {
   box.dataset.opts.split(',').forEach(v => {
@@ -566,7 +566,7 @@ function onPre(e, animate) {
   sessIdx(e.session);
   // Trigger dispatch arc on constellation canvas
   if (window._constellationDispatch) window._constellationDispatch(e.agent);
-  renderCards(); renderFleet(); renderStats();
+  renderCards(); renderStats();
 }
 
 function onTool(e) {
@@ -577,7 +577,7 @@ function onTool(e) {
     match.logs.push(logRecFor(e));
     if (match.logs.length > 12) match.logs.shift();
     match.nowText = e.tool + (e.target ? ' ' + e.target : '');
-    renderCards(); renderFleet();
+    renderCards();
   }
 }
 
@@ -593,7 +593,7 @@ function finish(rec, e, status, endMs) {
     dur: Math.max(0, endMs - rec.t0), tok, status, session: rec.session,
   });
   if (history.length > 200) history.pop();
-  renderCards(); renderLedger(); renderFleet(); renderStats();
+  renderCards(); renderLedger(); renderStats();
 }
 
 function onPost(e) {
@@ -605,7 +605,7 @@ function onPost(e) {
     if (e.ok === false) totalErrors++;
     if (e.tok != null) totalTokens = (totalTokens || 0) + e.tok;
     history.unshift({ end, agent: e.agent, model: e.model, task: e.task || '', dur: null, tok: e.tok ?? null, status: e.ok === false ? 'err' : 'ok', session: e.session });
-    renderLedger(); renderFleet(); renderStats();
+    renderLedger(); renderStats();
   }
 }
 
@@ -932,12 +932,6 @@ function renderLedger() {
   setTimeout(function() { resize(); drawFrame2(); window._constellationUpdateCount(); }, 200);
 })();
 
-function renderFleet() {
-  // renderFleet is now handled by the constellation canvas above.
-  // Kept as a no-op shim so existing call-sites (onPre/onPost/onStop/applyTweaks) don't error.
-  // The canvas redraws on requestAnimationFrame — no explicit call needed.
-}
-
 function renderStats() {
   $('st-running').textContent = running.size;
   $('st-dispatches').textContent = totalDispatches;
@@ -963,14 +957,14 @@ function connect() {
     $('empty-sub').classList.remove('err');
     // Hide the SSE connecting loader in the constellation panel
     if (window._constellationHideLoader) window._constellationHideLoader();
-    renderCards(); renderLedger(); renderFleet(); renderStats();
+    renderCards(); renderLedger(); renderStats();
   });
   es.onmessage = m => { try { handle(JSON.parse(m.data), live); } catch {} };
   es.onerror = () => {
     $('conn').textContent = 'reconnecting…'; $('dot').classList.remove('on'); live = false;
     $('empty-sub').textContent = 'reconnecting to /events…'; $('empty-sub').classList.add('err');
     for (const rec of [...running.values()]) running.delete(rec.id);
-    renderCards(); renderFleet();
+    renderCards();
     if (window._constellationShowLoader) window._constellationShowLoader();
   };
 }
