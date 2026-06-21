@@ -795,7 +795,6 @@ function renderLedger() {
     // Nodes
     Object.values(nodeMap).forEach(function(n) {
       var isOrch = n.id === 'orchestrator';
-      var liveRec = running.get ? null : null;
       // Check if dispatched (has a running record)
       var isActive = false;
       for (var r of running.values()) { if (r.agent === n.id) { isActive = true; break; } }
@@ -887,9 +886,12 @@ function renderLedger() {
   window._constellationDispatch = function(agentId) { drawDispatchArc(agentId); };
   window._constellationResize = function() { resize(); };
 
-  // SSE loader hide
+  // SSE loader hide / show (show is the precise inverse of hide)
   window._constellationHideLoader = function() {
     if (loaderEl) loaderEl.classList.add('hidden');
+  };
+  window._constellationShowLoader = function() {
+    if (loaderEl) loaderEl.classList.remove('hidden');
   };
 
   // Node tooltip
@@ -969,6 +971,7 @@ function connect() {
     $('empty-sub').textContent = 'reconnecting to /events…'; $('empty-sub').classList.add('err');
     for (const rec of [...running.values()]) running.delete(rec.id);
     renderCards(); renderFleet();
+    if (window._constellationShowLoader) window._constellationShowLoader();
   };
 }
 applyTweaks();
